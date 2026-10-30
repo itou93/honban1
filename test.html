@@ -154,20 +154,19 @@
                     rotation="0 0 0">
                 </a-entity>
             </a-entity>
-
-            <!-- targetIndex: 1 (PC等 -> 動画) -->
-            <a-entity mindar-image-target="targetIndex: 1" id="target-1">
-                <a-video
-                    id="floor-video-entity"
-                    src="#ar-video-element"
-                    position="0 0 0"
-                    rotation="0 0 0"
-                    width="${currentConfig.videoWidth}"
-                    height="${currentConfig.videoHeight}"
-                    material="shader: flat; side: double;">
-                </a-video>
-            </a-entity>
-        </a-scene>
+            
+            <!-- targetIndex: 1 (PC -> 動画) -->
+                <a-entity mindar-image-target="targetIndex: 1" id="target-1">
+            <a-video
+                id="floor-video-entity"
+                src="#ar-video-element"
+                position="0 0 0.1" 
+                rotation="0 0 0"
+                width="1.5"
+                height="0.85"
+                material="shader: flat; side: double;">
+            </a-video>
+        </a-entity>
         `;
 
         const sceneEl = document.getElementById('ar-scene');
