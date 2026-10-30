@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARスタンプラリー - 校内マップ</title>
     
-    <link rel="stylesheet" href="map.css?v=4">
+    <link rel="stylesheet" href="map.css?v=5">
 </head>
 <body>
 
-    <!-- ヘッダーエリア（右上ミニバッジ配置用） -->
+    <!-- ヘッダーエリア（右上ミニサムネイルバッジ） -->
     <div class="header-container">
         <h1 id="floorTitle">1F 校内マップ</h1>
-        <!-- 2回目以降いつでも開けるミニバッジボタン -->
-        <div id="completeBadge" class="complete-badge" onclick="openCompleteModal()" style="display: none;">
-            🎁 景品GET!
+        <!-- 右上に表示されるカードのミニサムネイル -->
+        <div id="completeBadge" class="complete-badge-thumb" onclick="openCompleteModal()" style="display: none;">
+            <img src="校内画像/card.png" alt="Card Thumb" class="badge-img">
         </div>
-    </div>
-    
+    </div>    
     <p>スワイプまたはボタンで上下左右エリアを移動しよう！</p>
 
     <!-- 階数切り替えボタン -->
@@ -102,23 +101,13 @@
         </div>
     </div>
 
-    <!-- ★ コンプリート表示ポップアップ ★ -->
+    <!-- コンプリート表示ポップアップ -->
     <div id="completeModal" class="complete-modal-overlay">
         <div class="complete-modal-card">
             <div class="modal-close-btn" onclick="closeCompleteModal()">×</div>
             
-            <div class="complete-header">🎉 全スポット制覇！</div>
-            <h2 class="complete-title">コンプリート！</h2>
-            
-            <!-- card.png を指定 -->
-            <div class="complete-illustration">
-                <img src="校内画像/card.png" alt="コンプリートイラスト" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="complete-fallback-icon" style="display:none;">🏆✨</div>
-            </div>
-
-            <div class="complete-message-box">
-                <p class="prize-tag">🎁 景品ゲット！</p>
-                <p class="prize-location"><strong>2階 3-2</strong> へ行こう！</p>
+            <div class="complete-illustration-single">
+                <img src="校内画像/card.png" alt="コンプリートカード" class="complete-main-img">
             </div>
 
             <button class="btn-complete-close" onclick="closeCompleteModal()">閉じる</button>
@@ -154,13 +143,13 @@
             setup2DSwipe();
             checkCompletionStatus();
         };
-        // ★ テスト用：強制的にコンプリート画面を開く（確認が終わったら消してください）
+
         function checkCompletionStatus() {
             const isCompleted = localStorage.getItem('stamp-complete-flag') === '1';
             const badge = document.getElementById('completeBadge');
             
             if (isCompleted && badge) {
-                badge.style.display = 'inline-flex';
+                badge.style.display = 'inline-block';
             }
         }
 
@@ -419,7 +408,6 @@
                     }, 800);
                 }
             }, 300);
-
         }
     </script>
 </body>
