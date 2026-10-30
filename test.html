@@ -92,11 +92,11 @@
             model: 'fukude3.glb', modelScale: '0.35 0.35 0.35', modelPos: '0 0 0',
             video: 'GameVideo.mp4', videoWidth: '1.0', videoHeight: '0.56'
         },
-        '4f': { 
-            mind0: '4f.mind', mind1: 'pc.mind',
+       '4f': { 
+            mind0: '4f2.mind',
             model: 'zyougi.glb', modelScale: '0.08 0.08 0.08', modelPos: '0 -0.3 0',
             video: 'jgvideo2.mp4', videoWidth: '1.0', videoHeight: '0.56'
-        },
+        }
         '5f': { 
             mind0: '5f.mind', mind1: 'ryukei.mind',
             model: 'syougyou3.glb', modelScale: '0.5 0.5 0.5', modelPos: '0 0 0',
@@ -125,7 +125,8 @@
         const container = document.getElementById('ar-container');
         
         // パスを相対指定（./）かつ半角スペース区切りで連結
-      const targets = `${currentConfig.mind0} ${currentConfig.mind1}`;
+     // パス指定は1つだけ
+        const targets = `./${currentConfig.mind0}`;
         container.innerHTML = `
         <a-scene
             id="ar-scene"
