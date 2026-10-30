@@ -75,13 +75,13 @@
     </div>
 
     <script>
-    // 各階層のターゲット定義（リポジトリの正確なファイル名に対応）
+    // 2つのマーカーを統合して作成した .mind ファイルを指定
     const floorData = {
-        '1f': { mind0: '1f2.mind', model: 'kougyo2.glb', modelScale: '0.2 0.2 0.2', modelPos: '0 0 0', video: 'denki.mp4', videoWidth: '1.0', videoHeight: '0.56' },
-        '2f': { mind0: '2f2.mind', model: 'syokutyou.glb', modelScale: '0.35 0.35 0.35', modelPos: '0 0 0', video: 'syokutyou.mp4', videoWidth: '1.0', videoHeight: '0.56' },
-        '3f': { mind0: '3f2.mind', model: 'fukude3.glb', modelScale: '0.35 0.35 0.35', modelPos: '0 0 0', video: 'hukude.mp4', videoWidth: '1.0', videoHeight: '0.56' },
-        '4f': { mind0: '4f2.mind', model: 'zyougi.glb', modelScale: '0.08 0.08 0.08', modelPos: '0 -0.3 0', video: 'jgvideo2.mp4', videoWidth: '1.0', videoHeight: '0.56' },
-        '5f': { mind0: '5f2.mind', model: 'syougyou3.glb', modelScale: '0.5 0.5 0.5', modelPos: '0 0 0', video: 'syougyou.mp4', videoWidth: '1.0', videoHeight: '0.56' }
+        '1f': { mind: '1f2.mind', model: 'kougyo2.glb', modelScale: '0.2 0.2 0.2', modelPos: '0 0 0', video: 'denki.mp4' },
+        '2f': { mind: '2f2.mind', model: 'syokutyou.glb', modelScale: '0.35 0.35 0.35', modelPos: '0 0 0', video: 'syokutyou.mp4' },
+        '3f': { mind: '3f2.mind', model: 'fukude3.glb', modelScale: '0.35 0.35 0.35', modelPos: '0 0 0', video: 'hukude.mp4' },
+        '4f': { mind: '4f2.mind', model: 'zyougi.glb', modelScale: '0.08 0.08 0.08', modelPos: '0 -0.3 0', video: 'jgvideo2.mp4' },
+        '5f': { mind: '5f2.mind', model: 'syougyou3.glb', modelScale: '0.5 0.5 0.5', modelPos: '0 0 0', video: 'syougyou.mp4' }
     };
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -104,9 +104,9 @@
     function buildARScene() {
         const container = document.getElementById('ar-container');
         
-        // パスを相対指定（./）かつ半角スペース区切りで連結
-     // パス指定は1つだけ
-        const targets = `./${currentConfig.mind0}`;
+        // 統合済み.mindファイルを読み込み
+        const targets = `./${currentConfig.mind}`;
+
         container.innerHTML = `
         <a-scene
             id="ar-scene"
@@ -125,7 +125,7 @@
             <a-entity light="type: ambient; color: #ffffff; intensity: 2.0;"></a-entity>
             <a-entity light="type: directional; color: #ffffff; intensity: 1.0;" position="1 2 1"></a-entity>
 
-            <!-- targetIndex: 0 (ポスター -> 3Dモデル) -->
+            <!-- 1つ目の画像（ポスター等） -> 3Dモデル表示 -->
             <a-entity mindar-image-target="targetIndex: 0" id="target-0">
                 <a-entity
                     gltf-model="#ar-model-asset"
@@ -135,18 +135,19 @@
                 </a-entity>
             </a-entity>
             
-            <!-- targetIndex: 1 (PC -> 動画) -->
-                <a-entity mindar-image-target="targetIndex: 1" id="target-1">
-            <a-video
-                id="floor-video-entity"
-                src="#ar-video-element"
-                position="0 0 0.1" 
-                rotation="0 0 0"
-                width="1.5"
-                height="0.85"
-                material="shader: flat; side: double;">
-            </a-video>
-        </a-entity>
+            <!-- 2つ目の画像（掲示物等） -> 動画表示 -->
+            <a-entity mindar-image-target="targetIndex: 1" id="target-1">
+                <a-video
+                    id="floor-video-entity"
+                    src="#ar-video-element"
+                    position="0 0 0.1" 
+                    rotation="0 0 0"
+                    width="1.5"
+                    height="0.85"
+                    material="shader: flat; side: double;">
+                </a-video>
+            </a-entity>
+        </a-scene>
         `;
 
         const sceneEl = document.getElementById('ar-scene');
@@ -169,13 +170,13 @@
 
         if (target0) {
             target0.addEventListener('targetFound', () => {
-                console.log("階層モデルマーカー認識成功！");
+                console.log("3Dモデルマーカー（1つ目の画像）認識成功！");
             });
         }
 
         if (target1) {
             target1.addEventListener('targetFound', () => {
-                console.log("学科動画マーカー認識成功！");
+                console.log("動画マーカー（2つ目の画像）認識成功！");
                 if (videoNativeEl) {
                     videoNativeEl.currentTime = 0;
                     videoNativeEl.play().catch(e => console.log("再生エラー:", e));
