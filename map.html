@@ -14,7 +14,7 @@
         <h1 id="floorTitle">1F 校内マップ</h1>
         <!-- 右上に表示されるカードのミニサムネイル -->
         <div id="completeBadge" class="complete-badge-thumb" onclick="openCompleteModal()" style="display: none;">
-            <img src="校内画像/card.png" alt="Card Thumb" class="badge-img">
+            <img src="校内画像/a/card.png" alt="Card Thumb" class="badge-img">
         </div>
     </div>    
     <p>スワイプまたはボタンで上下左右エリアを移動しよう！</p>
@@ -107,7 +107,7 @@
             <div class="modal-close-btn" onclick="closeCompleteModal()">×</div>
             
             <div class="complete-illustration-single">
-                <img src="校内画像/card.png" alt="コンプリートカード" class="complete-main-img">
+                <img src="校内画像/a/card.png" alt="コンプリートカード" class="complete-main-img">
             </div>
 
             <button class="btn-complete-close" onclick="closeCompleteModal()">閉じる</button>
@@ -118,16 +118,16 @@
         const allStamps = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 
         const stampImages = {
-            'a': '校内画像/1f3.jpg',
-            'b': '校内画像/時計.jpg',
-            'c': '校内画像/2f3.jpg',
-            'd': '校内画像/食物調理科２.jpg',
-            'e': '校内画像/3f3.jpg',
-            'f': '校内画像/服デ.jpg',
-            'g': '校内画像/4f2.jpg',
-            'h': '校内画像/パソコン.jpg',
-            'i': '校内画像/5f(2).jpg',
-            'j': '校内画像/流通経済.jpg'
+            'a': '校内画像/a/1f3.jpg',
+            'b': '校内画像/a/時計.jpg',
+            'c': '校内画像/a/2f3.jpg',
+            'd': '校内画像/a/食物調理科２.jpg',
+            'e': '校内画像/a/3f3.jpg',
+            'f': '校内画像/a/服飾デザイン2.jpg',
+            'g': '校内画像/a/4f2.jpg',
+            'h': '校内画像/a/pit1.jpg',
+            'i': '校内画像/a/5f(2).jpg',
+            'j': '校内画像/a/流通経済2.jpg'
         };
 
         const spotNames = {
@@ -255,36 +255,45 @@
             updateAreaView();
         }
 
-        function refreshMapStamps() {
-            allStamps.forEach(id => {
-                const el = document.getElementById(`stamp-${id}`);
-                if (!el) return;
+function refreshMapStamps() {
+    allStamps.forEach(id => {
+        const el = document.getElementById(`stamp-${id}`);
+        if (!el) return;
 
-                const isDone = localStorage.getItem(`stamp-${id}-done`) === '1';
-                const isReady = localStorage.getItem(`stamp-${id}-flag`) === '1';
-                const imgUrl = stampImages[id];
+        const isDone = localStorage.getItem(`stamp-${id}-done`) === '1';
+        const isReady = localStorage.getItem(`stamp-${id}-flag`) === '1';
+        const imgUrl = stampImages[id];
 
-                if (imgUrl) {
-                    el.style.backgroundImage = `url('${imgUrl}')`;
-                    el.style.backgroundSize = 'cover';
-                    el.style.backgroundPosition = 'center';
-                    el.innerHTML = "";
-                } else {
-                    el.style.backgroundImage = "none";
-                }
-
-                if (isDone) {
-                    el.classList.remove("ready");
-                    el.classList.add("active");
-                } else if (isReady) {
-                    el.classList.remove("active");
-                    el.classList.add("ready");
-                } else {
-                    el.classList.remove("ready", "active");
-                }
-            });
+        if (isDone) {
+            // ★ 獲得済みは 肉球スタンプ（校内画像/a/完了スタンプ.png）を表示
+            el.style.backgroundImage = "url('校内画像/a/完了スタンプ.png')";
+            el.style.backgroundSize = 'contain';
+            el.style.backgroundPosition = 'center';
+            el.style.backgroundRepeat = 'no-repeat';
+            el.classList.remove("ready");
+            el.classList.add("active");
+            el.innerHTML = "";
+        } else if (isReady) {
+            if (imgUrl) {
+                el.style.backgroundImage = `url('${imgUrl}')`;
+                el.style.backgroundSize = 'cover';
+                el.style.backgroundPosition = 'center';
+            }
+            el.classList.remove("active");
+            el.classList.add("ready");
+            el.innerHTML = "";
+        } else {
+            if (imgUrl) {
+                el.style.backgroundImage = `url('${imgUrl}')`;
+                el.style.backgroundSize = 'cover';
+                el.style.backgroundPosition = 'center';
+            } else {
+                el.style.backgroundImage = "none";
+            }
+            el.classList.remove("ready", "active");
         }
-
+    });
+}
         let currentStampKey = '';
         let progressInterval = null;
         let holdDuration = 0;
@@ -299,46 +308,57 @@
         const progressRing = document.getElementById('progressRing');
         const progressCircle = document.getElementById('progressCircle');
 
-        function openModal(typeKey) {
-            currentStampKey = typeKey;
-            modalTitle.textContent = spotNames[typeKey] || `スポット ${typeKey.toUpperCase()}`;
-            modal.style.display = 'flex';
+function openModal(typeKey) {
+    currentStampKey = typeKey;
+    modalTitle.textContent = spotNames[typeKey] || `スポット ${typeKey.toUpperCase()}`;
+    modal.style.display = 'flex';
 
-            const isDone = localStorage.getItem(`stamp-${typeKey}-done`) === '1';
-            const isReady = localStorage.getItem(`stamp-${typeKey}-flag`) === '1';
-            const imgUrl = stampImages[typeKey];
+    const isDone = localStorage.getItem(`stamp-${typeKey}-done`) === '1';
+    const isReady = localStorage.getItem(`stamp-${typeKey}-flag`) === '1';
+    const imgUrl = stampImages[typeKey];
 
-            modalSpot.className = 'modal-stamp-spot';
-            modalSpot.style.animation = 'none';
-            stampTool.style.display = 'none';
-            stampTool.style.transform = 'none';
-            stampTool.style.opacity = '1';
-            progressRing.style.display = 'none';
-            progressCircle.style.strokeDashoffset = CIRCLE_CIRCUMFERENCE;
+    modalSpot.className = 'modal-stamp-spot';
+    modalSpot.style.animation = 'none';
+    stampTool.style.display = 'none';
+    stampTool.style.transform = 'none';
+    stampTool.style.opacity = '1';
+    progressRing.style.display = 'none';
+    progressCircle.style.strokeDashoffset = CIRCLE_CIRCUMFERENCE;
 
-            if (imgUrl) {
-                modalSpot.style.backgroundImage = `url('${imgUrl}')`;
-                modalSpot.style.backgroundSize = 'cover';
-                modalSpot.style.backgroundPosition = 'center';
-                modalSpot.innerHTML = '';
-            } else {
-                modalSpot.style.backgroundImage = 'none';
-            }
+    // ★ 毎回モーダルを開く際に文字テキストをクリアする（ここを追加）
+    modalSpot.innerHTML = '';
 
-            if (isDone) {
-                modalSpot.classList.add('active');
-                modalDesc.textContent = 'スタンプ獲得済みです！';
-            } else if (isReady) {
-                modalSpot.classList.add('ready');
-                modalDesc.textContent = 'スタンプを3秒長押ししてGETしよう！';
-                stampTool.style.display = 'flex';
-                progressRing.style.display = 'block';
-            } else {
-                if (!imgUrl) modalSpot.innerHTML = '未獲得';
-                modalDesc.textContent = 'ARマーカーを読み取ると押せるようになります。';
-            }
+    if (isDone) {
+        // ★ 獲得済みは 肉球スタンプ（校内画像/a/完了スタンプ.png）を表示
+        modalSpot.style.backgroundImage = "url('校内画像/a/完了スタンプ.png')";
+        modalSpot.style.backgroundSize = 'contain';
+        modalSpot.style.backgroundPosition = 'center';
+        modalSpot.style.backgroundRepeat = 'no-repeat';
+        modalSpot.classList.add('active');
+        modalDesc.textContent = 'スタンプ獲得済みです！';
+    } else if (isReady) {
+        if (imgUrl) {
+            modalSpot.style.backgroundImage = `url('${imgUrl}')`;
+            modalSpot.style.backgroundSize = 'cover';
+            modalSpot.style.backgroundPosition = 'center';
         }
-
+        modalSpot.classList.add('ready');
+        modalDesc.textContent = 'スタンプを3秒長押ししてGETしよう！';
+        stampTool.style.display = 'flex';
+        progressRing.style.display = 'block';
+    } else {
+        if (imgUrl) {
+            modalSpot.style.backgroundImage = `url('${imgUrl}')`;
+            modalSpot.style.backgroundSize = 'cover';
+            modalSpot.style.backgroundPosition = 'center';
+        } else {
+            modalSpot.style.backgroundImage = 'none';
+            // ★ imgUrl が指定されていない場合のみ「未獲得」テキストをセット
+            modalSpot.innerHTML = '未獲得';
+        }
+        modalDesc.textContent = 'ARマーカーを読み取ると押せるようになります。';
+    }
+}
         function closeModal() {
             modal.style.display = 'none';
             resetPressing();
