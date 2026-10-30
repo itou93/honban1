@@ -1,0 +1,223 @@
+const deptNames = {
+    'stamp-a': '電子機械科',
+    'stamp-b': '情報技術科',
+    'stamp-c': '情報処理科',
+    'stamp-d': '服飾デザイン科',
+    'stamp-e': '食物調理科',
+    'stamp-f': '流通経済科'
+};
+
+let clickCount = 0;
+let clickTimer = null;
+
+// 来場者向けの案内メッセージ＆「3D体験画面へ移動」ボタン表示制御
+function updateSoftLog(status, message, isSuccess = true) {
+    const statusEl = document.getElementById('log-status');
+    const msgEl = document.getElementById('log-message');
+    const btnEl = document.getElementById('btn-to-test');
+
+    if (statusEl && msgEl) {
+        statusEl.textContent = status;
+        if (isSuccess) {
+            statusEl.style.background = '#d1fae5';
+            statusEl.style.color = '#047857';
+            // 校章マーカー検出時に「3D体験画面へ移動」ボタンを表示
+            if (btnEl) btnEl.style.display = 'block';
+        } else {
+            statusEl.style.background = '#e2e8f0';
+            statusEl.style.color = '#475569';
+            // 見失っている時はボタンを隠す
+            if (btnEl) btnEl.style.display = 'none';
+        }
+        msgEl.textContent = message;
+    }
+}
+
+function showNearObjectLog() {
+    return;
+}
+
+function stopWebcamStream() {
+    try {
+        const videoElems = document.querySelectorAll('video');
+        videoElems.forEach(video => {
+            if (video.srcObject) {
+                const stream = video.srcObject;
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+            }
+        });
+    } catch (e) {
+        console.warn("カメラ停止処理エラー:", e);
+    }
+}
+
+// AR.js パターンマーカー（校章）のイベント監視
+function bindMarkerEvents() {
+    const m1 = document.getElementById('ar-marker-1');
+    if (m1) {
+        m1.addEventListener('markerFound', function() {
+            console.log("検出成功: 校章マーカー (ar-marker-1)");
+            
+            // 動画再生は行わず、ログ更新と移動ボタンの表示のみ実施
+            updateSoftLog('検出成功！', '🎉 校章マーカーを読み取りました！下のボタンから体験画面へ進んでね', true);
+        });
+
+        m1.addEventListener('markerLost', function() {
+            console.log("マーカー喪失: ar-marker-1");
+            updateSoftLog('スキャン中', '近くに読み取れるものがあるかも！ボタンを押してみよう', false);
+        });
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    bindMarkerEvents();
+});
+
+window.addEventListener('beforeunload', () => {
+    stopWebcamStream();
+});
+
+function goBack() {
+    stopWebcamStream();
+    window.location.href = 'index.html';
+}
+
+function switchToMarkerless() {
+    stopWebcamStream();
+    window.location.href = './test.html';
+}
+
+function startAR() {
+    const screen = document.getElementById('explanation-screen');
+    if (screen) {
+        screen.remove();
+    }
+
+    const container = document.getElementById('ar-container');
+    if (container && !document.getElementById('ar-scene')) {
+        container.innerHTML = `
+            <a-scene 
+                id="ar-scene"
+                embedded 
+                arjs="sourceType: webcam; debugUIEnabled: false; patternRatio: 0.7; trackingMethod: best;" 
+                vr-mode-ui="enabled: false">
+            
+                <a-entity light="type: ambient; color: #ffffff; intensity: 1.8;"></a-entity>
+
+                <a-marker type="pattern" url="./pattern-koshou.patt" patternRatio="0.7" id="ar-marker-1"></a-marker>
+
+                <a-entity camera></a-entity>
+            </a-scene>
+        `;
+
+        setTimeout(() => {
+            bindMarkerEvents();
+        }, 300);
+    }
+}
+
+// 解放動画一覧モーダル制御（1学科1動画表示）
+function openCollection() {
+    const modal = document.getElementById('collection-modal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeCollection() {
+    const modal = document.getElementById('collection-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+function selectDepartment(deptKey) {
+    openDeptVideos(deptKey);
+}
+
+function openDeptVideos(deptKey) {
+    const modal = document.getElementById('dept-video-modal');
+    const title = document.getElementById('dept-title');
+    const list = document.getElementById('dept-video-list');
+    
+    if (title) title.textContent = `${deptNames[deptKey] || '学科'} の動画`;
+    
+    if (list) {
+        list.innerHTML = '';
+
+        const deptVideoData = {
+            'stamp-a': { id: 'stamp-a-flag', title: '電子機械科 紹介動画', src: 'denki.mp4' },
+            'stamp-b': { id: 'stamp-b-flag', title: '情報技術科 紹介動画', src: 'jgvideo2.mp4' },
+            'stamp-c': { id: 'stamp-c-flag', title: '情報処理科 紹介動画', src: 'joho_syori.mp4' },
+            'stamp-d': { id: 'stamp-d-flag', title: '服飾デザイン科 紹介動画', src: 'hukude.mp4' },
+            'stamp-e': { id: 'stamp-e-flag', title: '食物調理科 紹介動画', src: 'syokutyou.mp4' },
+            'stamp-f': { id: 'stamp-f-flag', title: '流通経済科 紹介動画', src: 'syougyou.mp4' }
+        };
+
+        const videoInfo = deptVideoData[deptKey];
+
+        if (videoInfo) {
+            let isUnlocked = false;
+
+            try {
+                isUnlocked = (localStorage.setItem ? localStorage.getItem(videoInfo.id) === '1' : false);
+            } catch (e) {
+                isUnlocked = false;
+            }
+
+            const div = document.createElement('div');
+            div.className = `video-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+
+            if (isUnlocked) {
+                div.innerHTML = `
+                    <p style="font-weight:bold; margin:0 0 8px 0; color:#059669;">🔓 ${videoInfo.title}</p>
+                    <video src="${videoInfo.src}" controls style="width:100%; border-radius:8px; display:block;"></video>
+                `;
+            } else {
+                div.innerHTML = `
+                    <p style="font-weight:bold; margin:0; color:#475569;">🔒 ${videoInfo.title}</p>
+                    <div class="secret-box" style="background:#cbd5e1; border-radius:10px; padding:20px; text-align:center; margin-top:8px;">
+                        <div class="secret-icon" style="font-size:36px; font-weight:bold; color:#64748b; margin-bottom:4px;">❓</div>
+                        <small style="color:#64748b; font-weight:bold;">ARマーカーを探して解放しよう！</small>
+                    </div>
+                `;
+            }
+            list.appendChild(div);
+        }
+    }
+    
+    const collectionModal = document.getElementById('collection-modal');
+    if (collectionModal) collectionModal.style.display = 'none';
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeDeptVideos() {
+    const deptModal = document.getElementById('dept-video-modal');
+    const collectionModal = document.getElementById('collection-modal');
+    
+    if (deptModal) {
+        const videos = deptModal.querySelectorAll('video');
+        videos.forEach(v => v.pause());
+        deptModal.style.display = 'none';
+    }
+    
+    if (collectionModal) {
+        collectionModal.style.display = 'flex';
+    }
+}
+
+function handleTitleClick() {
+    clickCount++;
+    clearTimeout(clickTimer);
+
+    if (clickCount >= 5) {
+        clickCount = 0;
+        if (confirm('【開発者コマンド】スタンプと解放状況を全リセットしますか？')) {
+            try { localStorage.clear(); } catch(e){}
+            alert('すべての進行状況をリセットしました！');
+            location.reload();
+        }
+    } else {
+        clickTimer = setTimeout(() => {
+            clickCount = 0;
+        }, 1500);
+    }
+}

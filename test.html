@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>校舎内 WebAR 学科紹介</title>
+
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+
+    <style>
+        html, body { 
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh; height: 100dvh;
+            overflow: hidden; font-family: sans-serif; 
+            background-color: #000000 !important; 
+        }
+        #ar-container, a-scene {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100vw !important; height: 100vh !important; height: 100dvh !important;
+            z-index: 1 !important; overflow: hidden !important;
+        }
+        .btn-back {
+            position: fixed; top: 20px; left: 20px; z-index: 10000;
+            background-color: rgba(0, 0, 0, 0.6); color: #ffffff;
+            padding: 10px 18px; border-radius: 20px; text-decoration: none;
+            font-weight: bold; font-size: 16px; border: 2px solid #ffffff;
+        }
+        .floor-selector {
+            position: fixed; top: 20px; right: 20px; z-index: 10000;
+            display: flex; gap: 6px; background: rgba(0, 0, 0, 0.6);
+            padding: 6px; border-radius: 20px; border: 2px solid #ffffff;
+        }
+        .floor-btn {
+            background: transparent; color: white; border: none;
+            padding: 8px 12px; border-radius: 12px; font-weight: bold;
+            font-size: 14px; cursor: pointer;
+        }
+        .floor-btn.active { background: #10b981; color: white; }
+        .mindar-ui-overlay, .mindar-ui-scanning { display: none !important; }
+        .stamp-dialog-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.7); z-index: 20000; display: none;
+            align-items: center; justify-content: center; backdrop-filter: blur(5px);
+        }
+        .stamp-dialog-box {
+            background: #ffffff; width: 85%; max-width: 340px;
+            border-radius: 20px; padding: 24px 20px; text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="videoMaya.html" class="btn-back">← 戻る</a>
+
+    <div class="floor-selector">
+        <button id="btn-1f" class="floor-btn" onclick="switchFloor('1f')">1F</button>
+        <button id="btn-2f" class="floor-btn" onclick="switchFloor('2f')">2F</button>
+        <button id="btn-3f" class="floor-btn" onclick="switchFloor('3f')">3F</button>
+        <button id="btn-4f" class="floor-btn" onclick="switchFloor('4f')">4F</button>
+        <button id="btn-5f" class="floor-btn" onclick="switchFloor('5f')">5F</button>
+    </div>
+
+    <div id="ar-container"></div>
+
+    <div id="stamp-dialog" class="stamp-dialog-overlay">
+        <div class="stamp-dialog-box">
+            <h3 style="margin-top: 0; color: #059669; font-size: 20px;">🎉 スタンプ獲得！</h3>
+            <p id="stamp-msg" style="font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 20px;"></p>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeStampDialog()" style="flex: 1; padding: 10px; border: none; background: #94a3b8; color: white; border-radius: 10px; font-weight: bold; cursor: pointer;">閉じる</button>
+                <button onclick="goToMap()" style="flex: 1; padding: 10px; border: none; background: #f59e0b; color: white; border-radius: 10px; font-weight: bold; cursor: pointer;">マップへGO!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // 各階層のターゲット定義（リポジトリの正確なファイル名に対応）
+    const floorData = {
+        '1f': { 
+            mind0: '1f.mind', mind1: 'tokei.mind',
+            model: 'kougyo2.glb', modelScale: '0.2 0.2 0.2', modelPos: '0 0 0',
+            video: 'GameVideo.mp4', videoWidth: '1.0', videoHeight: '0.56'
+        },
+        '2f': { 
+            mind0: '2f.mind', mind1: 'shokutyou.mind',
+            model: 'syokutyou.glb', modelScale: '0.35 0.35 0.35', modelPos: '0 0 0',
+            video: 'GameVideo.mp4', videoWidth: '1.0', videoHeight: '0.56'
+        },
+        '3f': { 
+            mind0: '3f.mind', mind1: 'hukude.mind', // 実ファイルの hukude.mind に合わせ修正
+            model: 'fukude3.glb', modelScale: '0.35 0.35 0.35', modelPos: '0 0 0',
+            video: 'GameVideo.mp4', videoWidth: '1.0', videoHeight: '0.56'
+        },
+        '4f': { 
+            mind0: '4f.mind', mind1: 'pc.mind',
+            model: 'zyougi.glb', modelScale: '0.08 0.08 0.08', modelPos: '0 -0.3 0',
+            video: 'jgvideo2.mp4', videoWidth: '1.0', videoHeight: '0.56'
+        },
+        '5f': { 
+            mind0: '5f.mind', mind1: 'ryukei.mind',
+            model: 'syougyou3.glb', modelScale: '0.5 0.5 0.5', modelPos: '0 0 0',
+            video: 'GameVideo.mp4', videoWidth: '1.0', videoHeight: '0.56'
+        }
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let selectedFloor = (urlParams.get('floor') || '4f').toLowerCase();
+    if (!floorData[selectedFloor]) selectedFloor = '4f';
+
+    let currentConfig = floorData[selectedFloor];
+
+    window.addEventListener('DOMContentLoaded', () => {
+        updateActiveButton(selectedFloor);
+        buildARScene();
+    });
+
+    function updateActiveButton(floorPrefix) {
+        document.querySelectorAll('.floor-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById(`btn-${floorPrefix}`);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    function buildARScene() {
+        const container = document.getElementById('ar-container');
+        
+        // パスを相対指定（./）かつ半角スペース区切りで連結
+       const targets = `${currentConfig.mind0} ${currentConfig.mind1}`;
+        container.innerHTML = `
+        <a-scene
+            id="ar-scene"
+            mindar-image="imageTargetSrc: ${targets}; autoStart: true; uiLoading: no; uiError: no;"
+            color-space="sRGB"
+            renderer="colorManagement: true, physicallyCorrectLights: true"
+            vr-mode-ui="enabled: false"
+            device-orientation-permission-ui="enabled: false">
+
+            <a-assets>
+                <video id="ar-video-element" src="${currentConfig.video}" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+                <a-asset-item id="ar-model-asset" src="${currentConfig.model}"></a-asset-item>
+            </a-assets>
+
+            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+            <a-entity light="type: ambient; color: #ffffff; intensity: 2.0;"></a-entity>
+            <a-entity light="type: directional; color: #ffffff; intensity: 1.0;" position="1 2 1"></a-entity>
+
+            <!-- targetIndex: 0 (ポスター -> 3Dモデル) -->
+            <a-entity mindar-image-target="targetIndex: 0" id="target-0">
+                <a-entity
+                    gltf-model="#ar-model-asset"
+                    position="${currentConfig.modelPos}"
+                    scale="${currentConfig.modelScale}"
+                    rotation="0 0 0">
+                </a-entity>
+            </a-entity>
+
+            <!-- targetIndex: 1 (PC等 -> 動画) -->
+            <a-entity mindar-image-target="targetIndex: 1" id="target-1">
+                <a-video
+                    id="floor-video-entity"
+                    src="#ar-video-element"
+                    position="0 0 0"
+                    rotation="0 0 0"
+                    width="${currentConfig.videoWidth}"
+                    height="${currentConfig.videoHeight}"
+                    material="shader: flat; side: double;">
+                </a-video>
+            </a-entity>
+        </a-scene>
+        `;
+
+        const sceneEl = document.getElementById('ar-scene');
+        if (sceneEl.hasLoaded) {
+            setupTargetEvents();
+        } else {
+            sceneEl.addEventListener('loaded', setupTargetEvents);
+        }
+    }
+
+    function switchFloor(floorPrefix) {
+        if (floorPrefix === selectedFloor) return;
+        window.location.href = `?floor=${floorPrefix}`;
+    }
+
+    function setupTargetEvents() {
+        const target0 = document.getElementById('target-0');
+        const target1 = document.getElementById('target-1');
+        const videoNativeEl = document.getElementById('ar-video-element');
+
+        if (target0) {
+            target0.addEventListener('targetFound', () => {
+                console.log("階層モデルマーカー認識成功！");
+            });
+        }
+
+        if (target1) {
+            target1.addEventListener('targetFound', () => {
+                console.log("学科動画マーカー認識成功！");
+                if (videoNativeEl) {
+                    videoNativeEl.currentTime = 0;
+                    videoNativeEl.play().catch(e => console.log("再生エラー:", e));
+                }
+            });
+
+            target1.addEventListener('targetLost', () => {
+                if (videoNativeEl) {
+                    videoNativeEl.pause();
+                }
+            });
+        }
+    }
+
+    function closeStampDialog() {
+        document.getElementById('stamp-dialog').style.display = 'none';
+    }
+
+    function goToMap() {
+        window.location.href = 'map.html';
+    }
+    </script>
+</body>
+</html>
