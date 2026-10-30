@@ -146,7 +146,7 @@ function openDeptVideos(deptKey) {
         const deptVideoData = {
             'stamp-a': { id: 'stamp-a-flag', title: '電子機械科 紹介動画', src: 'denki.mp4' },
             'stamp-b': { id: 'stamp-b-flag', title: '情報技術科 紹介動画', src: 'jgvideo2.mp4' },
-            'stamp-c': { id: 'stamp-c-flag', title: '情報処理科 紹介動画', src: 'joho_syori.mp4' },
+            'stamp-c': { id: 'stamp-c-flag', title: '情報処理科 紹介動画', src: 'syougyou.mp4' },
             'stamp-d': { id: 'stamp-d-flag', title: '服飾デザイン科 紹介動画', src: 'hukude.mp4' },
             'stamp-e': { id: 'stamp-e-flag', title: '食物調理科 紹介動画', src: 'syokutyou.mp4' },
             'stamp-f': { id: 'stamp-f-flag', title: '流通経済科 紹介動画', src: 'syougyou.mp4' }
@@ -158,7 +158,7 @@ function openDeptVideos(deptKey) {
             let isUnlocked = false;
 
             try {
-                isUnlocked = (localStorage.setItem ? localStorage.getItem(videoInfo.id) === '1' : false);
+                isUnlocked = (localStorage.getItem(videoInfo.id) === '1');
             } catch (e) {
                 isUnlocked = false;
             }
@@ -184,6 +184,7 @@ function openDeptVideos(deptKey) {
         }
     }
     
+    // モーダル表示切替処理を正しく配置
     const collectionModal = document.getElementById('collection-modal');
     if (collectionModal) collectionModal.style.display = 'none';
     if (modal) modal.style.display = 'flex';
