@@ -19,6 +19,51 @@ p {
     margin-bottom: 12px;
 }
 
+/* ヘッダー & 右上ミニサムネイルバッジ */
+.header-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 10px;
+}
+
+.complete-badge-thumb {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 36px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #ff9f43;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    z-index: 100;
+    transition: transform 0.2s ease;
+    animation: thumbPulse 2s infinite ease-in-out;
+    background: #ffffff;
+}
+
+.complete-badge-thumb:active {
+    transform: translateY(-50%) scale(0.92);
+}
+
+.badge-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+@keyframes thumbPulse {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-50%) scale(1.08); }
+}
+
 /* フロア切り替えボタン */
 .floor-selector {
     display: flex;
@@ -219,14 +264,14 @@ p {
     font-size: 15px;
 }
 
-/* モーダル */
+/* スタンプ操作モーダル */
 .stamp-modal-overlay {
     display: none;
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
     background-color: rgba(0, 0, 0, 0.7);
-    z-index: 100;
+    z-index: 1000;
     justify-content: center;
     align-items: center;
 }
@@ -245,11 +290,12 @@ p {
 
 .modal-close-btn {
     position: absolute;
-    top: 12px; right: 16px;
-    font-size: 20px;
+    top: 10px; right: 14px;
+    font-size: 22px;
     font-weight: bold;
-    color: #aaa;
+    color: #888;
     cursor: pointer;
+    z-index: 10;
 }
 
 .modal-title {
@@ -383,6 +429,71 @@ p {
     100% { transform: scale(1); }
 }
 
+/* ★ コンプリートモーダル（レスポンシブ完全対応） */
+.complete-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    height: 100dvh;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+    box-sizing: border-box;
+    padding: 10px;
+}
+
+.complete-modal-card {
+    background: #ffffff;
+    width: 92%;
+    max-width: 480px;
+    padding: 24px 16px 16px;
+    border-radius: 16px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.complete-illustration-single {
+    width: 100%;
+    margin-top: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.complete-main-img {
+    width: 100%;
+    max-height: 65vh;
+    object-fit: contain;
+    display: block;
+    border-radius: 8px;
+}
+
+.btn-complete-close {
+    width: 100%;
+    padding: 12px 0;
+    background: #007bff;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+}
+
+.btn-complete-close:active {
+    background: #0056b3;
+}
+
 /* スマホ対応レスポンシブ設定 */
 @media (max-width: 768px) {
     .map-container { height: 280px; }
@@ -414,149 +525,4 @@ p {
     .floor-5f .map-content { width: 200%; min-width: auto; }
     .map-container.floor-5f:not(.view-right) .map-content { height: 210%; transform: translate(0%, 0%); }
     .map-container.floor-5f.view-right .map-content { height: 210%; transform: translate(-50%, 0%); }
-    /* --- ヘッダー & 景品GETミニバッジ --- */
-.header-container {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.complete-badge {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: linear-gradient(135deg, #ff9f43, #ee5253);
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 6px 12px;
-    border-radius: 20px;
-    box-shadow: 0 3px 8px rgba(238, 82, 83, 0.4);
-    cursor: pointer;
-    animation: badgeBounce 2s infinite ease-in-out;
-    border: 1px solid #ffffff;
-    z-index: 50;
-}
-
-@keyframes badgeBounce {
-    0%, 100% { transform: translateY(-50%) scale(1); }
-    50% { transform: translateY(-50%) scale(1.08); }
-}
-
-/* --- コンプリートポップアップモーダル --- */
-.complete-modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background-color: rgba(0, 0, 0, 0.8);
-    z-index: 200;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(4px);
-}
-
-.complete-modal-card {
-    background: #ffffff;
-    width: 88%;
-    max-width: 360px;
-    padding: 28px 20px 20px;
-    border-radius: 20px;
-    position: relative;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 3px solid #ff9f43;
-}
-
-.complete-header {
-    font-size: 13px;
-    font-weight: bold;
-    color: #ee5253;
-    letter-spacing: 1px;
-    margin-bottom: 2px;
-}
-
-.complete-title {
-    font-size: 26px;
-    font-weight: 900;
-    color: #222222;
-    margin: 0 0 15px 0;
-    background: linear-gradient(45deg, #ff9f43, #ee5253);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.complete-illustration {
-    width: 140px;
-    height: 140px;
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.complete-illustration img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.complete-fallback-icon {
-    font-size: 70px;
-    line-height: 1;
-}
-
-.complete-message-box {
-    background-color: #fff9f0;
-    border: 2px dashed #ff9f43;
-    border-radius: 12px;
-    width: 100%;
-    padding: 12px;
-    box-sizing: border-box;
-    margin-bottom: 18px;
-}
-
-.prize-tag {
-    font-size: 16px;
-    font-weight: bold;
-    color: #d63031;
-    margin: 0 0 4px 0;
-}
-
-.prize-location {
-    font-size: 17px;
-    color: #2d3436;
-    margin: 0;
-}
-
-.prize-location strong {
-    font-size: 22px;
-    color: #0984e3;
-    text-decoration: underline;
-}
-
-.btn-complete-close {
-    width: 100%;
-    padding: 12px 0;
-    background: linear-gradient(135deg, #0984e3, #74b9ff);
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: bold;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(9, 132, 227, 0.3);
-}
-
-.btn-complete-close:active {
-    transform: scale(0.98);
-}
 }
