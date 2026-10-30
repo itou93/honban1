@@ -75,7 +75,6 @@
     </div>
 
     <script>
-    // 2つのマーカーを統合して作成した .mind ファイルを指定
     const floorData = {
         '1f': { mind: '1f2.mind', model: 'kougyo2.glb', modelScale: '0.2 0.2 0.2', modelPos: '0 0 0', video: 'denki.mp4' },
         '2f': { mind: '2f2.mind', model: 'syokutyou.glb', modelScale: '0.35 0.35 0.35', modelPos: '0 0 0', video: 'syokutyou.mp4' },
@@ -103,8 +102,6 @@
 
     function buildARScene() {
         const container = document.getElementById('ar-container');
-        
-        // 統合済み.mindファイルを読み込み
         const targets = `./${currentConfig.mind}`;
 
         container.innerHTML = `
@@ -117,7 +114,7 @@
             device-orientation-permission-ui="enabled: false">
 
             <a-assets>
-                <video id="ar-video-element" src="${currentConfig.video}" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+                <video id="ar-video-element" src="${currentConfig.video}" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted autoplay></video>
                 <a-asset-item id="ar-model-asset" src="${currentConfig.model}"></a-asset-item>
             </a-assets>
 
@@ -125,7 +122,7 @@
             <a-entity light="type: ambient; color: #ffffff; intensity: 2.0;"></a-entity>
             <a-entity light="type: directional; color: #ffffff; intensity: 1.0;" position="1 2 1"></a-entity>
 
-            <!-- 1つ目の画像（ポスター等） -> 3Dモデル表示 -->
+            <!-- targetIndex: 0 -> 3Dモデル表示 -->
             <a-entity mindar-image-target="targetIndex: 0" id="target-0">
                 <a-entity
                     gltf-model="#ar-model-asset"
@@ -135,17 +132,17 @@
                 </a-entity>
             </a-entity>
             
-            <!-- 2つ目の画像（掲示物等） -> 動画表示 -->
+            <!-- targetIndex: 1 -> 動画表示 -->
             <a-entity mindar-image-target="targetIndex: 1" id="target-1">
-                <a-video
+                <a-plane
                     id="floor-video-entity"
                     src="#ar-video-element"
-                    position="0 0 0.1" 
+                    position="0 0 0" 
                     rotation="0 0 0"
-                    width="1.5"
-                    height="0.85"
+                    width="1.2"
+                    height="0.7"
                     material="shader: flat; side: double;">
-                </a-video>
+                </a-plane>
             </a-entity>
         </a-scene>
         `;
@@ -170,20 +167,22 @@
 
         if (target0) {
             target0.addEventListener('targetFound', () => {
-                console.log("3Dモデルマーカー（1つ目の画像）認識成功！");
+                console.log("3Dモデルマーカー認識成功！");
             });
         }
 
         if (target1) {
             target1.addEventListener('targetFound', () => {
-                console.log("動画マーカー（2つ目の画像）認識成功！");
+                console.log("動画マーカー認識成功！");
                 if (videoNativeEl) {
+                    videoNativeEl.muted = true;
                     videoNativeEl.currentTime = 0;
                     videoNativeEl.play().catch(e => console.log("再生エラー:", e));
                 }
             });
 
             target1.addEventListener('targetLost', () => {
+                console.log("動画マーカー見失い");
                 if (videoNativeEl) {
                     videoNativeEl.pause();
                 }
