@@ -10,7 +10,7 @@ const deptNames = {
 let clickCount = 0;
 let clickTimer = null;
 
-// 来場者向けの案内メッセージ＆「3D体験画面へ移動」ボタン表示制御
+// 案内メッセージ＆「3D体験画面へ移動」ボタン表示制御
 function updateSoftLog(status, message, isSuccess = true) {
     const statusEl = document.getElementById('log-status');
     const msgEl = document.getElementById('log-message');
@@ -21,12 +21,10 @@ function updateSoftLog(status, message, isSuccess = true) {
         if (isSuccess) {
             statusEl.style.background = '#d1fae5';
             statusEl.style.color = '#047857';
-            // 校章マーカー検出時に「3D体験画面へ移動」ボタンを表示
             if (btnEl) btnEl.style.display = 'block';
         } else {
             statusEl.style.background = '#e2e8f0';
             statusEl.style.color = '#475569';
-            // 見失っている時はボタンを隠す
             if (btnEl) btnEl.style.display = 'none';
         }
         msgEl.textContent = message;
@@ -59,8 +57,6 @@ function bindMarkerEvents() {
     if (m1) {
         m1.addEventListener('markerFound', function() {
             console.log("検出成功: 校章マーカー (ar-marker-1)");
-            
-            // 動画再生は行わず、ログ更新と移動ボタンの表示のみ実施
             updateSoftLog('検出成功！', '🎉 校章マーカーを読み取りました！下のボタンから体験画面へ進んでね', true);
         });
 
@@ -184,7 +180,6 @@ function openDeptVideos(deptKey) {
         }
     }
     
-    // モーダル表示切替処理を正しく配置
     const collectionModal = document.getElementById('collection-modal');
     if (collectionModal) collectionModal.style.display = 'none';
     if (modal) modal.style.display = 'flex';
