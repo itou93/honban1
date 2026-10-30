@@ -92,6 +92,20 @@
     window.addEventListener('DOMContentLoaded', () => {
         updateActiveButton(selectedFloor);
         buildARScene();
+
+        // iOS対策: ユーザーが画面を一度タッチした際に動画再生をアンロック
+        const unlock = () => {
+            const videoEl = document.getElementById('ar-video-element');
+            if (videoEl) {
+                videoEl.play().then(() => {
+                    videoEl.pause();
+                }).catch(() => {});
+            }
+            window.removeEventListener('touchstart', unlock);
+            window.removeEventListener('click', unlock);
+        };
+        window.addEventListener('touchstart', unlock, { passive: true });
+        window.addEventListener('click', unlock, { passive: true });
     });
 
     function updateActiveButton(floorPrefix) {
@@ -176,8 +190,11 @@
                 console.log("動画マーカー認識成功！");
                 if (videoNativeEl) {
                     videoNativeEl.muted = true;
-                    videoNativeEl.currentTime = 0;
-                    videoNativeEl.play().catch(e => console.log("再生エラー:", e));
+                    videoNativeEl.play().catch(e => {
+                        console.log("再生エラー対処:", e);
+                        videoNativeEl.setAttribute('muted', 'true');
+                        videoNativeEl.play();
+                    });
                 }
             });
 
