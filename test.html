@@ -1,81 +1,4 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>校舎内 WebAR 学科紹介</title>
-
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-
-    <style>
-        html, body { 
-            margin: 0; padding: 0;
-            width: 100vw; height: 100vh; height: 100dvh;
-            overflow: hidden; font-family: sans-serif; 
-            background-color: #000000 !important; 
-        }
-        #ar-container, a-scene {
-            position: fixed !important; top: 0 !important; left: 0 !important;
-            width: 100vw !important; height: 100vh !important; height: 100dvh !important;
-            z-index: 1 !important; overflow: hidden !important;
-        }
-        .btn-back {
-            position: fixed; top: 20px; left: 20px; z-index: 10000;
-            background-color: rgba(0, 0, 0, 0.6); color: #ffffff;
-            padding: 10px 18px; border-radius: 20px; text-decoration: none;
-            font-weight: bold; font-size: 16px; border: 2px solid #ffffff;
-        }
-        .floor-selector {
-            position: fixed; top: 20px; right: 20px; z-index: 10000;
-            display: flex; gap: 6px; background: rgba(0, 0, 0, 0.6);
-            padding: 6px; border-radius: 20px; border: 2px solid #ffffff;
-        }
-        .floor-btn {
-            background: transparent; color: white; border: none;
-            padding: 8px 12px; border-radius: 12px; font-weight: bold;
-            font-size: 14px; cursor: pointer;
-        }
-        .floor-btn.active { background: #10b981; color: white; }
-        .mindar-ui-overlay, .mindar-ui-scanning { display: none !important; }
-        .stamp-dialog-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.7); z-index: 20000; display: none;
-            align-items: center; justify-content: center; backdrop-filter: blur(5px);
-        }
-        .stamp-dialog-box {
-            background: #ffffff; width: 85%; max-width: 340px;
-            border-radius: 20px; padding: 24px 20px; text-align: center;
-        }
-    </style>
-</head>
-<body>
-
-    <a href="videoMaya.html" class="btn-back">← 戻る</a>
-
-    <div class="floor-selector">
-        <button id="btn-1f" class="floor-btn" onclick="switchFloor('1f')">1F</button>
-        <button id="btn-2f" class="floor-btn" onclick="switchFloor('2f')">2F</button>
-        <button id="btn-3f" class="floor-btn" onclick="switchFloor('3f')">3F</button>
-        <button id="btn-4f" class="floor-btn" onclick="switchFloor('4f')">4F</button>
-        <button id="btn-5f" class="floor-btn" onclick="switchFloor('5f')">5F</button>
-    </div>
-
-    <!-- ここに ar-container を確実に配置 -->
-    <div id="ar-container"></div>
-
-    <div id="stamp-dialog" class="stamp-dialog-overlay">
-        <div class="stamp-dialog-box">
-            <h3 style="margin-top: 0; color: #059669; font-size: 20px;">🎉 スタンプ獲得！</h3>
-            <p id="stamp-msg" style="font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 20px;"></p>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="closeStampDialog()" style="flex: 1; padding: 10px; border: none; background: #94a3b8; color: white; border-radius: 10px; font-weight: bold; cursor: pointer;">閉じる</button>
-                <button onclick="goToMap()" style="flex: 1; padding: 10px; border: none; background: #f59e0b; color: white; border-radius: 10px; font-weight: bold; cursor: pointer;">マップへGO!</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
+<script>
     const floorData = {
         '1f': { mind: '1f2.mind', model: 'kougyo2.glb', modelScale: '0.08 0.08 0.08', modelPos: '0 0 0', video: 'denki.mp4' },
         '2f': { mind: '2f2.mind', model: 'syokutyou.glb', modelScale: '1.0 1.0 1.0', modelPos: '0 0 0', video: 'syokutyou.mp4' },
@@ -84,14 +7,14 @@
         '5f': { mind: '5f2.mind', model: 'syougyou3.glb', modelScale: '0.5 0.5 0.5', modelPos: '0 0 0', video: 'syougyou.mp4' }
     };
 
-   // 階層とスタンプフラグのマッピング（1階につき2つのスタンプを割り当て）
-const floorStampMap = {
-    '1f': ['stamp-a-flag', 'stamp-b-flag'],
-    '2f': ['stamp-c-flag', 'stamp-d-flag'],
-    '3f': ['stamp-e-flag', 'stamp-f-flag'],
-    '4f': ['stamp-g-flag', 'stamp-h-flag'],
-    '5f': ['stamp-i-flag', 'stamp-j-flag']
-};
+    // 階層とスタンプフラグのマッピング（1階につき2つのスタンプを割り当て）
+    const floorStampMap = {
+        '1f': ['stamp-a-flag', 'stamp-b-flag'],
+        '2f': ['stamp-c-flag', 'stamp-d-flag'],
+        '3f': ['stamp-e-flag', 'stamp-f-flag'],
+        '4f': ['stamp-g-flag', 'stamp-h-flag'],
+        '5f': ['stamp-i-flag', 'stamp-j-flag']
+    };
 
     const urlParams = new URLSearchParams(window.location.search);
     let selectedFloor = (urlParams.get('floor') || '4f').toLowerCase();
@@ -204,29 +127,19 @@ const floorStampMap = {
             target1.addEventListener('targetFound', () => {
                 console.log("動画マーカー認識成功！");
                 
-    target1.addEventListener('targetFound', () => {
-    console.log("動画マーカー認識成功！");
-    
-自動的に動画コレクションを解放（localStorage書き込み）
-
-                const currentStampKey = floorStampMap[selectedFloor];
-
-                if (currentStampKey) {
-
+                // 動画ポスター認識時に自動的に動画コレクションを解放（localStorage書き込み）
+                const currentStampKeys = floorStampMap[selectedFloor];
+                if (currentStampKeys && Array.isArray(currentStampKeys)) {
                     try {
-
-                        localStorage.setItem(currentStampKey, '1');
-
-                        console.log(`動画解放成功: ${currentStampKey}`);
-
+                        currentStampKeys.forEach(key => {
+                            localStorage.setItem(key, '1');
+                            console.log(`動画解放成功: ${key}`);
+                        });
                     } catch (e) {
-
                         console.warn("localStorage書き込みエラー:", e);
-
                     }
-
                 }
-    // ...以下動画再生処理
+
                 if (videoNativeEl) {
                     videoNativeEl.muted = true;
                     videoNativeEl.play().catch(e => {
@@ -254,5 +167,3 @@ const floorStampMap = {
         window.location.href = 'map.html';
     }
     </script>
-</body>
-</html>
