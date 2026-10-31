@@ -207,18 +207,25 @@ const floorStampMap = {
     target1.addEventListener('targetFound', () => {
     console.log("動画マーカー認識成功！");
     
-    // 該当する階のすべてのスタンプフラグを解放
-    const currentStampKeys = floorStampMap[selectedFloor];
-    if (currentStampKeys && Array.isArray(currentStampKeys)) {
-        try {
-            currentStampKeys.forEach(key => {
-                localStorage.setItem(key, '1');
-                console.log(`動画解放成功: ${key}`);
-            });
-        } catch (e) {
-            console.warn("localStorage書き込みエラー:", e);
-        }
-    }
+自動的に動画コレクションを解放（localStorage書き込み）
+
+                const currentStampKey = floorStampMap[selectedFloor];
+
+                if (currentStampKey) {
+
+                    try {
+
+                        localStorage.setItem(currentStampKey, '1');
+
+                        console.log(`動画解放成功: ${currentStampKey}`);
+
+                    } catch (e) {
+
+                        console.warn("localStorage書き込みエラー:", e);
+
+                    }
+
+                }
     // ...以下動画再生処理
                 if (videoNativeEl) {
                     videoNativeEl.muted = true;
