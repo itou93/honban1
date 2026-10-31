@@ -84,14 +84,14 @@
         '5f': { mind: '5f2.mind', model: 'syougyou3.glb', modelScale: '0.5 0.5 0.5', modelPos: '0 0 0', video: 'syougyou.mp4' }
     };
 
-    // 階層と動画解放フラグ（スタンプ）のマッピング
-    const floorStampMap = {
-        '1f': 'stamp-a-flag',
-        '2f': 'stamp-e-flag',
-        '3f': 'stamp-d-flag',
-        '4f': 'stamp-b-flag',
-        '5f': 'stamp-f-flag'
-    };
+   // 階層とスタンプフラグのマッピング（1階につき2つのスタンプを割り当て）
+const floorStampMap = {
+    '1f': ['stamp-a-flag', 'stamp-b-flag'],
+    '2f': ['stamp-c-flag', 'stamp-d-flag'],
+    '3f': ['stamp-e-flag', 'stamp-f-flag'],
+    '4f': ['stamp-g-flag', 'stamp-h-flag'],
+    '5f': ['stamp-i-flag', 'stamp-j-flag']
+};
 
     const urlParams = new URLSearchParams(window.location.search);
     let selectedFloor = (urlParams.get('floor') || '4f').toLowerCase();
@@ -204,17 +204,22 @@
             target1.addEventListener('targetFound', () => {
                 console.log("動画マーカー認識成功！");
                 
-                // 動画ポスター認識時に自動的に動画コレクションを解放（localStorage書き込み）
-                const currentStampKey = floorStampMap[selectedFloor];
-                if (currentStampKey) {
-                    try {
-                        localStorage.setItem(currentStampKey, '1');
-                        console.log(`動画解放成功: ${currentStampKey}`);
-                    } catch (e) {
-                        console.warn("localStorage書き込みエラー:", e);
-                    }
-                }
-
+    target1.addEventListener('targetFound', () => {
+    console.log("動画マーカー認識成功！");
+    
+    // 該当する階のすべてのスタンプフラグを解放
+    const currentStampKeys = floorStampMap[selectedFloor];
+    if (currentStampKeys && Array.isArray(currentStampKeys)) {
+        try {
+            currentStampKeys.forEach(key => {
+                localStorage.setItem(key, '1');
+                console.log(`動画解放成功: ${key}`);
+            });
+        } catch (e) {
+            console.warn("localStorage書き込みエラー:", e);
+        }
+    }
+    // ...以下動画再生処理
                 if (videoNativeEl) {
                     videoNativeEl.muted = true;
                     videoNativeEl.play().catch(e => {
