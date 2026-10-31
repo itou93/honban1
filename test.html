@@ -61,18 +61,15 @@
         <button id="btn-5f" class="floor-btn" onclick="switchFloor('5f')">5F</button>
     </div>
 
-    <!-- ar-container 配置 -->
+    <!-- ここに ar-container を確実に配置 -->
     <div id="ar-container"></div>
 
-    <!-- スタンプ獲得ポップアップダイアログ -->
     <div id="stamp-dialog" class="stamp-dialog-overlay">
         <div class="stamp-dialog-box">
-            <h3 id="dialog-title" style="margin-top: 0; color: #059669; font-size: 20px;">🎉 スタンプ獲得チャンス！</h3>
-            <p id="stamp-msg" style="font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 20px;">
-                スポットを検出しました！<br>マップを開いてスタンプを押しますか？
-            </p>
+            <h3 style="margin-top: 0; color: #059669; font-size: 20px;">🎉 スタンプ獲得！</h3>
+            <p id="stamp-msg" style="font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 20px;"></p>
             <div style="display: flex; gap: 10px;">
-                <button onclick="closeStampDialog()" style="flex: 1; padding: 10px; border: none; background: #94a3b8; color: white; border-radius: 10px; font-weight: bold; cursor: pointer;">まだ見にいく</button>
+                <button onclick="closeStampDialog()" style="flex: 1; padding: 10px; border: none; background: #94a3b8; color: white; border-radius: 10px; font-weight: bold; cursor: pointer;">閉じる</button>
                 <button onclick="goToMap()" style="flex: 1; padding: 10px; border: none; background: #f59e0b; color: white; border-radius: 10px; font-weight: bold; cursor: pointer;">マップへGO!</button>
             </div>
         </div>
@@ -101,10 +98,6 @@
     if (!floorData[selectedFloor]) selectedFloor = '4f';
 
     let currentConfig = floorData[selectedFloor];
-
-    // タイマー管理＆多重動作防止フラグ
-    let scanTimer = null;
-    let isAlreadyUnlocked = false;
 
     window.addEventListener('DOMContentLoaded', () => {
         updateActiveButton(selectedFloor);
@@ -184,12 +177,10 @@
         `;
 
         const sceneEl = document.getElementById('ar-scene');
-        if (sceneEl) {
-            if (sceneEl.hasLoaded) {
-                setupTargetEvents();
-            } else {
-                sceneEl.addEventListener('loaded', setupTargetEvents);
-            }
+        if (sceneEl.hasLoaded) {
+            setupTargetEvents();
+        } else {
+            sceneEl.addEventListener('loaded', setupTargetEvents);
         }
     }
 
@@ -198,80 +189,44 @@
         window.location.href = `?floor=${floorPrefix}`;
     }
 
-    // 10秒待機カウントダウン＆スタンプ獲得処理
-    function startStampCountdown() {
-        if (isAlreadyUnlocked) return;
-
-        console.log("マーカー認識: 10秒間のカウントダウンを開始します");
-        
-        // 既存のタイマーをクリアして再セット
-        if (scanTimer) clearTimeout(scanTimer);
-
-        scanTimer = setTimeout(() => {
-            const currentStampKey = floorStampMap[selectedFloor];
-            if (currentStampKey) {
-                try {
-                    localStorage.setItem(currentStampKey, '1');
-                    console.log(`スタンプ獲得: ${currentStampKey}`);
-                    isAlreadyUnlocked = true;
-
-                    // ポップアップダイアログ表示
-                    const dialog = document.getElementById('stamp-dialog');
-                    if (dialog) {
-                        dialog.style.display = 'flex';
-                    }
-                } catch (e) {
-                    console.warn("localStorage書き込みエラー:", e);
-                }
-            }
-        }, 15000); // 10秒（10000ミリ秒）
-    }
-
-    // マーカーを見失った場合にタイマーをキャンセル
-    function cancelStampCountdown() {
-        if (scanTimer) {
-            console.log("マーカー喪失: カウントダウンをキャンセルします");
-            clearTimeout(scanTimer);
-            scanTimer = null;
-        }
-    }
-
     function setupTargetEvents() {
         const target0 = document.getElementById('target-0');
         const target1 = document.getElementById('target-1');
         const videoNativeEl = document.getElementById('ar-video-element');
 
-        // --- 3Dモデルマーカー（targetIndex: 0） ---
         if (target0) {
             target0.addEventListener('targetFound', () => {
                 console.log("3Dモデルマーカー認識成功！");
-                startStampCountdown();
-            });
-
-            target0.addEventListener('targetLost', () => {
-                cancelStampCountdown();
             });
         }
 
-        // --- 動画マーカー（targetIndex: 1） ---
         if (target1) {
             target1.addEventListener('targetFound', () => {
                 console.log("動画マーカー認識成功！");
-                startStampCountdown();
+                
+                // 動画ポスター認識時に自動的に動画コレクションを解放（localStorage書き込み）
+                const currentStampKey = floorStampMap[selectedFloor];
+                if (currentStampKey) {
+                    try {
+                        localStorage.setItem(currentStampKey, '1');
+                        console.log(`動画解放成功: ${currentStampKey}`);
+                    } catch (e) {
+                        console.warn("localStorage書き込みエラー:", e);
+                    }
+                }
 
                 if (videoNativeEl) {
                     videoNativeEl.muted = true;
                     videoNativeEl.play().catch(e => {
                         console.log("再生エラー対処:", e);
                         videoNativeEl.setAttribute('muted', 'true');
-                        videoNativeEl.play().catch(() => {});
+                        videoNativeEl.play();
                     });
                 }
             });
 
             target1.addEventListener('targetLost', () => {
                 console.log("動画マーカー見失い");
-                cancelStampCountdown();
                 if (videoNativeEl) {
                     videoNativeEl.pause();
                 }
@@ -280,10 +235,7 @@
     }
 
     function closeStampDialog() {
-        const dialog = document.getElementById('stamp-dialog');
-        if (dialog) {
-            dialog.style.display = 'none';
-        }
+        document.getElementById('stamp-dialog').style.display = 'none';
     }
 
     function goToMap() {
